@@ -21,6 +21,9 @@ obj_mask = cv2.imread('vs_obj_mask_800x600.png', cv2.CV_LOAD_IMAGE_GRAYSCALE)
 #detector = cv2.ORB()
 detector = cv2.FastFeatureDetector(20)
 obj_keypoints = detector.detect(obj, obj_mask)
+print '************************************************************'
+print 'scene - {} keypoints'.format(len(obj_keypoints))
+
 extractor = cv2.DescriptorExtractor_create('BRISK')
 obj_keypoints, obj_descriptors = extractor.compute(obj, obj_keypoints)
 obj_h, obj_w = obj.shape[:2]
@@ -36,7 +39,7 @@ scene_keypoints = detector.detect(scene)
 ta = time.time()
 print '************************************************************'
 print '{}s: get scene keypoints'.format(ta-tb)
-print 'scene - {} features'.format(len(scene_keypoints))
+print 'scene - {} keypoints'.format(len(scene_keypoints))
 
 #compute descriptors
 tb = time.time()
