@@ -128,9 +128,9 @@ right = max(rights) - obj_w
 extracted = scene_original[top:bottom, left:right]
 
 #display and save the matched and extracted images
-cv2.imshow('matched SURF', vis)
-cv2.imwrite('result_matches.png', vis)
+cv2.imshow('match visualization', vis)
+cv2.imwrite('match_visualization.png', vis)
 cv2.imshow('extracted image', extracted)
-cv2.imwrite('result.png', extracted)
+cv2.imwrite('extracted.png', extracted)
 cv2.waitKey()
 cv2.destroyAllWindows()
