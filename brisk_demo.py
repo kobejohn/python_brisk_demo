@@ -1,4 +1,5 @@
 from operator import attrgetter
+import sys
 
 import numpy as np
 import cv2
@@ -61,6 +62,9 @@ ta = time.time()
 print '************************************************************'
 print '{}s: find good matches'.format(ta-tb)
 print '{} good matches found'.format(len(good_matches))
+if len(good_matches) < 3:
+    print 'not enough good matches to continue'
+    sys.exit()
 
 #get positions of matches  and homography
 tb = time.time()
@@ -90,6 +94,8 @@ cv2.polylines(vis, [scene_offset_corners], True, (0, 255, 0), 2)
 #mark inclier and outlier matches on the combined image
 if homography_mask is None:
     homography_mask = np.ones(len(scene_matched_points), np.bool)
+
+
 green = (0, 255, 0)
 red = (0, 0, 255)
 gray = (150, 150, 150)
@@ -107,6 +113,7 @@ for (x1, y1), (x2, y2), inlier in zip(np.int32(obj_matched_points), np.int32(sce
         cv2.line(vis, (x1-r, y1+r), (x1+r, y1-r), red, thickness)
         cv2.line(vis, (x2+obj_w-r, y2-r), (x2+obj_w+r, y2+r), red, thickness)
         cv2.line(vis, (x2+obj_w-r, y2+r), (x2+obj_w+r, y2-r), red, thickness)
+
 
 #extract a maximum size image from the probably non-rectangular bounding corners
 scene_top_left, scene_top_right, scene_bottom_right, scene_bottom_left = scene_offset_corners
