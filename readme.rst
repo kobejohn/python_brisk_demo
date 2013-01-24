@@ -5,8 +5,13 @@ Quick Usage
 
 Introduction
 ============
-As an inexperienced opencv user, getting the BRISK feature descriptor working
-took some time. This is for anyone who is looking for an example.
+As an inexperienced opencv user, getting the feature detection working in python
+took some time. Then I realized that SIFT / SURF / everything that has some
+scale invariance in OpenCV was encumbered with patents. With BRISK, now there is
+a viable (sometimes better!) alternative.
+
+I hope this example helps anyone else who wants to get started in python with
+feature detection.
 
 
 Copyright
