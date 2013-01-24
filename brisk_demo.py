@@ -15,9 +15,11 @@ def showimage(image):
 #everything that can be done and stored ahead of time:
 obj_original = cv2.imread('vs_obj_800x600.png', cv2.CV_LOAD_IMAGE_COLOR)
 obj = cv2.cvtColor(obj_original, cv2.COLOR_BGR2GRAY)
-obj = cv2.GaussianBlur(obj, (3,3), 0) #blur to make features match at different resolutions
-
+kernel_w = int(2.0 * round((obj.shape[1]*0.005+1)/2.0)-1)
+kernel_h = int(2.0 * round((obj.shape[0]*0.005+1)/2.0)-1)
+obj = cv2.GaussianBlur(obj, (kernel_w, kernel_h), 0) #blur to make features match at different resolutions
 obj_mask = cv2.imread('vs_obj_mask_800x600.png', cv2.CV_LOAD_IMAGE_GRAYSCALE)
+detector = cv2.FastFeatureDetector()
 obj_keypoints = detector.detect(obj, obj_mask)
 print '************************************************************'
 print 'scene - {} keypoints'.format(len(obj_keypoints))
@@ -30,7 +32,9 @@ object_corners = np.float32([(0,0), (obj_w, 0), (obj_w, obj_h), (0, obj_h)]) #st
 #get the scene to be searched
 scene_original = cv2.imread('scene_with_vs_640x480.png', cv2.CV_LOAD_IMAGE_COLOR)
 scene = cv2.cvtColor(scene_original, cv2.COLOR_BGR2GRAY)
-scene = cv2.GaussianBlur(scene, (3,3), 0) #blur to make features match at different resolutions
+kernel_w = int(2.0 * round((scene.shape[1]*0.005+1)/2.0)-1)
+kernel_h = int(2.0 * round((scene.shape[0]*0.005+1)/2.0)-1)
+scene = cv2.GaussianBlur(scene, (kernel_w, kernel_h), 0) #blur to make features match at different resolutions
 
 
 #detect keypoints
