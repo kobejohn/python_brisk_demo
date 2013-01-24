@@ -15,11 +15,9 @@ def showimage(image):
 #everything that can be done and stored ahead of time:
 obj_original = cv2.imread('vs_obj_800x600.png', cv2.CV_LOAD_IMAGE_COLOR)
 obj = cv2.cvtColor(obj_original, cv2.COLOR_BGR2GRAY)
+obj = cv2.GaussianBlur(obj, (3,3), 0) #blur to make features match at different resolutions
+
 obj_mask = cv2.imread('vs_obj_mask_800x600.png', cv2.CV_LOAD_IMAGE_GRAYSCALE)
-#detector = cv2.FeatureDetector_create("FAST")
-#detector = cv2.BRISK()
-#detector = cv2.ORB()
-detector = cv2.FastFeatureDetector()
 obj_keypoints = detector.detect(obj, obj_mask)
 print '************************************************************'
 print 'scene - {} keypoints'.format(len(obj_keypoints))
@@ -32,6 +30,8 @@ object_corners = np.float32([(0,0), (obj_w, 0), (obj_w, obj_h), (0, obj_h)]) #st
 #get the scene to be searched
 scene_original = cv2.imread('scene_with_vs_640x480.png', cv2.CV_LOAD_IMAGE_COLOR)
 scene = cv2.cvtColor(scene_original, cv2.COLOR_BGR2GRAY)
+scene = cv2.GaussianBlur(scene, (3,3), 0) #blur to make features match at different resolutions
+
 
 #detect keypoints
 tb = time.time()
