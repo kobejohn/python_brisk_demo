@@ -19,7 +19,7 @@ obj_mask = cv2.imread('vs_obj_mask_800x600.png', cv2.CV_LOAD_IMAGE_GRAYSCALE)
 #detector = cv2.FeatureDetector_create("FAST")
 #detector = cv2.BRISK()
 #detector = cv2.ORB()
-detector = cv2.FastFeatureDetector(20)
+detector = cv2.FastFeatureDetector()
 obj_keypoints = detector.detect(obj, obj_mask)
 print '************************************************************'
 print 'scene - {} keypoints'.format(len(obj_keypoints))
@@ -49,18 +49,21 @@ print '************************************************************'
 print '{}s: get scene descriptors'.format(ta-tb)
 
 #match descriptors
-matcher = cv2.BFMatcher(cv2.NORM_L1)
+matcher = cv2.BFMatcher(cv2.NORM_L2SQR)
 tb = time.time()
 matches = matcher.match(obj_descriptors, scene_descriptors)
 ta = time.time()
 print '************************************************************'
 print '{}s: match descriptors brute force'.format(ta-tb)
+print '{}: total matches found'.format(len(matches))
 
 #identify 'good' matches
 tb = time.time()
 min_dist = min(matches, key=attrgetter('distance')).distance
 max_dist = max(matches, key=attrgetter('distance')).distance
-good_matches = [match for match in matches if match.distance < 3*min_dist]
+print '{} / {}: min / max distance'.format(min_dist, max_dist)
+min_dist = min_dist or max_dist*0.01 #if min_dist is zero, use a small percentage of max
+good_matches = [match for match in matches if match.distance <= 3 * min_dist]
 ta = time.time()
 print '************************************************************'
 print '{}s: find good matches'.format(ta-tb)
