@@ -113,7 +113,7 @@ print'    {} / {}      inliers / total matches'.format(np.sum(homography_mask), 
 
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-# Visualize the results
+# Visualize the matching results
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 #use the homography to identify the location of the object in the scene in pixel terms
 obj_h, obj_w = obj.shape[0:2]
@@ -154,6 +154,7 @@ for (x1, y1), (x2, y2), inlier in zip(np.int32(obj_matched_points), np.int32(sce
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # Extract the object from the original scene
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+use_extracted = True
 #combine all tops+bottoms and lefts+rights before min/max to handle flipped projections
 tops_bottoms = list(corner[1] for corner in obj_in_scene_corners)
 lefts_rights = list(corner[0] for corner in obj_in_scene_corners)
@@ -162,18 +163,27 @@ top =    max(int(min(tops_bottoms)), 0)
 bottom = min(int(max(tops_bottoms)), scene_h - 1)
 left =   max(int(min(lefts_rights)), 0)
 right =  min(int(max(lefts_rights)), scene_h - 1)
+extracted = scene_original[top:bottom, left:right]
+if (top == bottom) or (left == right):
+    print 'Flat result image can not be displayed or written.'
+    use_extracted = False
+
+
 obj_area = polygon_area(object_corners)
 found_obj_area = polygon_area(((top,left), (top,right), (bottom,right), (bottom,left)))
-if (found_obj_area > 1.5 * obj_area) or (found_obj_area < 0.5 * obj_area):
-    print 'A homography was found but it doesn\'t seem like a real match. You can see the results in match_visualization.png.'
-    sys.exit()
+if (found_obj_area > obj_area * 4) or (found_obj_area < obj_area / 4):
+    print 'A homography was found but it seems too large or small for a real match.'
 
 
-extracted = scene_original[top:bottom, left:right]
-#display and save the matched and extracted images
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+# Display and save all the results
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 cv2.imshow('match visualization', combo)
 cv2.imwrite('match_visualization.png', combo)
-cv2.imshow('extracted image', extracted)
-cv2.imwrite('extracted.png', extracted)
+if use_extracted:
+    cv2.imshow('extracted image', extracted)
+    cv2.imwrite('extracted.png', extracted)
+
+
 cv2.waitKey()
 cv2.destroyAllWindows()
