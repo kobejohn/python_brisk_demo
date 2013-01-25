@@ -1,3 +1,4 @@
+from os import path
 import sys
 import numpy as np
 import cv2
@@ -32,7 +33,7 @@ matcher = cv2.BFMatcher(cv2.NORM_L2SQR)
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # Object Features
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-obj_original = cv2.imread('object.png', cv2.CV_LOAD_IMAGE_COLOR)
+obj_original = cv2.imread(path.join('source_images', 'object.png'), cv2.CV_LOAD_IMAGE_COLOR)
 if obj_original is None:
     print 'Couldn\'t find the object image with the provided path.'
     sys.exit()
@@ -41,7 +42,7 @@ if obj_original is None:
 obj_gray = cv2.cvtColor(obj_original, cv2.COLOR_BGR2GRAY) #basic feature detection works in grayscale
 obj = proportional_gaussian(obj_gray) #mild gaussian
 #mask with white in areas to consider, black in areas to ignore
-obj_mask = cv2.imread('object_mask.png', cv2.CV_LOAD_IMAGE_GRAYSCALE)
+obj_mask = cv2.imread(path.join('source_images', 'object_mask.png'), cv2.CV_LOAD_IMAGE_GRAYSCALE)
 if obj_mask is None:
     print 'Couldn\'t find the object mask image with the provided path. Continuing without it.'
 
@@ -56,7 +57,7 @@ print '    {} keypoints'.format(len(obj_keypoints))
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # Scene Features
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-scene_original = cv2.imread('scene.png', cv2.CV_LOAD_IMAGE_COLOR)
+scene_original = cv2.imread(path.join('source_images', 'scene.png'), cv2.CV_LOAD_IMAGE_COLOR)
 if scene_original is None:
     print 'Couldn\'t find the scene image with the provided path.'
     sys.exit()
