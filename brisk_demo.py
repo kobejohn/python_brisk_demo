@@ -159,7 +159,6 @@ for (x1, y1), (x2, y2), inlier in zip(np.int32(obj_matched_points), np.int32(sce
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # Extract the object from the original scene
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-use_extracted = True
 #combine all tops+bottoms and lefts+rights before min/max to handle flipped projections
 tops_bottoms = list(corner[1] for corner in obj_in_scene_corners)
 lefts_rights = list(corner[0] for corner in obj_in_scene_corners)
@@ -167,8 +166,9 @@ lefts_rights = list(corner[0] for corner in obj_in_scene_corners)
 top =    max(int(min(tops_bottoms)), 0)
 bottom = min(int(max(tops_bottoms)), scene_h - 1)
 left =   max(int(min(lefts_rights)), 0)
-right =  min(int(max(lefts_rights)), scene_h - 1)
+right =  min(int(max(lefts_rights)), scene_w - 1)
 extracted = scene_original[top:bottom, left:right]
+use_extracted = True
 if (top == bottom) or (left == right):
     print 'Flat result image can not be displayed or written.'
     use_extracted = False
@@ -176,7 +176,7 @@ if (top == bottom) or (left == right):
 
 obj_area = polygon_area(object_corners)
 found_obj_area = polygon_area(((top,left), (top,right), (bottom,right), (bottom,left)))
-if (found_obj_area > obj_area * 4) or (found_obj_area < obj_area / 4):
+if (found_obj_area > obj_area * 2) or (found_obj_area < float(obj_area) / 2):
     print 'A homography was found but it seems too large or small for a real match.'
 
 
