@@ -17,6 +17,17 @@ def proportional_gaussian(image):
     return cv2.GaussianBlur(image, (kernel_w, kernel_h), 0) #blur to make features match at different resolutions
 
 
+def polygon_area(corners):
+    """Calculate the area of the polygon described by the sequence of corners."""
+    area = 0
+    for i in range(4):
+        j = (i + 1) % 4
+        area += corners[i][1] * corners[j][0]
+        area -= corners[i][0] * corners[j][1]
+    if area < 0: area *= -1
+    return area
+
+
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # Fundamental Parts
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
@@ -30,10 +41,19 @@ matcher = cv2.BFMatcher(cv2.NORM_L2SQR)
 # Object Features
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 obj_original = cv2.imread('object.png', cv2.CV_LOAD_IMAGE_COLOR)
+if obj_original is None:
+    print 'Couldn\'t find the object image with the provided path.'
+    sys.exit()
+
+
 obj_gray = cv2.cvtColor(obj_original, cv2.COLOR_BGR2GRAY) #basic feature detection works in grayscale
 obj = proportional_gaussian(obj_gray) #mild gaussian
 #mask with white in areas to consider, black in areas to ignore
 obj_mask = cv2.imread('object_mask.png', cv2.CV_LOAD_IMAGE_GRAYSCALE)
+if obj_mask is None:
+    print 'Couldn\'t find the object mask image with the provided path. Continuing without it.'
+
+
 #this is the fingerprint:
 obj_keypoints = detector.detect(obj, obj_mask)
 obj_keypoints, obj_descriptors = extractor.compute(obj, obj_keypoints)
@@ -45,10 +65,19 @@ print '    {} keypoints'.format(len(obj_keypoints))
 # Scene Features
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 scene_original = cv2.imread('scene.png', cv2.CV_LOAD_IMAGE_COLOR)
+if scene_original is None:
+    print 'Couldn\'t find the scene image with the provided path.'
+    sys.exit()
+
+
 scene_gray = cv2.cvtColor(scene_original, cv2.COLOR_BGR2GRAY)
 scene = proportional_gaussian(scene_gray)
 #mask with white in areas to consider, black in areas to ignore
 scene_mask = cv2.imread('scene_mask.png', cv2.CV_LOAD_IMAGE_GRAYSCALE)
+if scene_mask is None:
+    print 'Couldn\'t find the scene mask image with the provided path. Continuing without it.'
+
+
 #this is the fingerprint:
 scene_keypoints = detector.detect(scene, scene_mask)
 scene_keypoints, scene_descriptors = extractor.compute(scene, scene_keypoints)
@@ -63,6 +92,8 @@ matches = matcher.match(obj_descriptors, scene_descriptors) #try to match simila
 if len(matches) == 0:
     print 'No matches found between the image and scene keypoints.'
     sys.exit()
+
+
 #do some filtering of the matches to find the best ones
 distances = [match.distance for match in matches]
 min_dist = min(distances)
@@ -139,6 +170,13 @@ top =    max(int(min(tops_bottoms)), 0)
 bottom = min(int(max(tops_bottoms)), scene_h - 1)
 left =   max(int(min(lefts_rights)), 0)
 right =  min(int(max(lefts_rights)), scene_h - 1)
+obj_area = polygon_area(object_corners)
+found_obj_area = polygon_area(((top,left), (top,right), (bottom,right), (bottom,left)))
+if (found_obj_area > 1.5 * obj_area) or (found_obj_area < 0.5 * obj_area):
+    print 'A homography was found but it doesn\'t seem like a real match. You can see the results in match_visualization.png.'
+    sys.exit()
+
+
 extracted = scene_original[top:bottom, left:right]
 #display and save the matched and extracted images
 cv2.imshow('match visualization', combo)
