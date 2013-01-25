@@ -3,13 +3,6 @@ import numpy as np
 import cv2
 
 
-def showimage(image):
-    """For playing around manually."""
-    cv2.imshow('asdf', image)
-    cv2.waitKey()
-    cv2.destroyAllWindows()
-
-
 def proportional_gaussian(image):
     """Help objects with differing sharpness look more similar to the feature detector etc."""
     kernel_w = int(2.0 * round((image.shape[1]*0.005+1)/2.0)-1)
