@@ -118,15 +118,19 @@ print'    {} / {}      inliers / total matches'.format(np.sum(homography_mask), 
 
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-# Visualize the matching results
+# Extract sizes and coordinates
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-#use the homography to identify the location of the object in the scene in pixel terms
 obj_h, obj_w = obj.shape[0:2]
 scene_h, scene_w = scene.shape[0:2]
 #corners: opencv uses (top left, top right, bottom right, bottom left)
-object_corners = np.float32([(0,0), (obj_w, 0), (obj_w, obj_h), (0, obj_h)])
+object_corners_float = np.float32([(0,0), (obj_w, 0), (obj_w, obj_h), (0, obj_h)])
 #corners of the object in the scene (I don't know about the reshaping. I never investigated it)
-obj_in_scene_corners = cv2.perspectiveTransform(object_corners.reshape(1, -1, 2), homography).reshape(-1, 2)
+obj_in_scene_corners_float = cv2.perspectiveTransform(object_corners_float.reshape(1, -1, 2), homography).reshape(-1, 2)
+
+
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+# Visualize the matching results
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 #create a combined image of the original object and the scene
 combo = np.zeros((max(scene_h, obj_h), scene_w + obj_w), np.uint8)
 combo[0:obj_h, 0:obj_w] = obj
@@ -137,8 +141,8 @@ blue =  (255, 0, 0)
 green = (0, 255, 0)
 red =   (0, 0, 255)
 gray =  (150, 150, 150)
-obj_in_scene_offset_corners = np.int32(obj_in_scene_corners + (obj_w, 0)) #offset for the combined image
-cv2.polylines(combo, [obj_in_scene_offset_corners], True, blue, 2)
+obj_in_scene_offset_corners_float = obj_in_scene_corners_float + (obj_w, 0) #offset for the combined image
+cv2.polylines(combo, [np.int32(obj_in_scene_offset_corners_float)], True, blue, 2)
 #mark inlier and outlier matches
 for (x1, y1), (x2, y2), inlier in zip(np.int32(obj_matched_points), np.int32(scene_matched_points), homography_mask):
     if inlier:
@@ -159,9 +163,9 @@ for (x1, y1), (x2, y2), inlier in zip(np.int32(obj_matched_points), np.int32(sce
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # Extract the object from the original scene
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-#combine all tops+bottoms and lefts+rights before min/max to handle flipped projections
-tops_bottoms = list(corner[1] for corner in obj_in_scene_corners)
-lefts_rights = list(corner[0] for corner in obj_in_scene_corners)
+#max/min the corners to disentangle any flipped, etc. projections
+tops_bottoms = list(corner[1] for corner in obj_in_scene_corners_float)
+lefts_rights = list(corner[0] for corner in obj_in_scene_corners_float)
 #limit the boundaries to the scene boundaries
 top =    max(int(min(tops_bottoms)), 0)
 bottom = min(int(max(tops_bottoms)), scene_h - 1)
