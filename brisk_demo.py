@@ -47,9 +47,10 @@ print '    {} keypoints'.format(len(obj_keypoints))
 scene_original = cv2.imread('scene.png', cv2.CV_LOAD_IMAGE_COLOR)
 scene_gray = cv2.cvtColor(scene_original, cv2.COLOR_BGR2GRAY)
 scene = proportional_gaussian(scene_gray)
-#you can use a mask like with the object if you want
+#mask with white in areas to consider, black in areas to ignore
+scene_mask = cv2.imread('scene_mask.png', cv2.CV_LOAD_IMAGE_GRAYSCALE)
 #this is the fingerprint:
-scene_keypoints = detector.detect(scene)
+scene_keypoints = detector.detect(scene, scene_mask)
 scene_keypoints, scene_descriptors = extractor.compute(scene, scene_keypoints)
 print 'Scene Summary  **************************************************'
 print '    {} keypoints'.format(len(scene_keypoints))
