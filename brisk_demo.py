@@ -10,15 +10,19 @@ def proportional_gaussian(image):
     kernel_h = int(2.0 * round((image.shape[0]*0.005+1)/2.0)-1)
     return cv2.GaussianBlur(image, (kernel_w, kernel_h), 0) #blur to make features match at different resolutions
 
-
 def polygon_area(vertices):
-    """Calculate the area of the vertices described by the sequence of vertices."""
-    area = 0
-    for i in range(4):
-        j = (i + 1) % 4
-        area += vertices[i][1] * vertices[j][0]
-        area -= vertices[i][0] * vertices[j][1]
-    return abs(area) #abs in case it's negative
+    """Calculate the area of the vertices described by the sequence of vertices.
+
+    Thanks to Darel Rex Finley: http://alienryderflex.com/polygon_area/
+    """
+    area = 0.0
+    X = [float(vertex[0]) for vertex in vertices]
+    Y = [float(vertex[1]) for vertex in vertices]
+    j = len(vertices) - 1
+    for i in range(len(vertices)):
+        area += (X[j] + X[i]) * (Y[j] - Y[i])
+        j = i
+    return abs(area) / 2 #abs in case it's negative
 
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
