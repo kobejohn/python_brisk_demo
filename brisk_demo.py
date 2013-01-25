@@ -87,15 +87,15 @@ scene_matched_points = np.array([scene_keypoints[match.trainIdx].pt for match in
 homography, homography_mask = cv2.findHomography(obj_matched_points, scene_matched_points, cv2.RANSAC, 2.0) #2.0: should be very close
 print 'Homography Summary  **************************************************'
 print'    {} / {}      inliers / total matches'.format(np.sum(homography_mask), len(homography_mask))
-#it's basically done at this point. The rest is for visualization / making use of the results
+
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # Visualize the results
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-#next use the homography to identify the location of the object in the scene in pixel terms
-#corners of the original object (opencv uses top left, top right, bottom right, bottom left)
+#use the homography to identify the location of the object in the scene in pixel terms
 obj_h, obj_w = obj.shape[0:2]
 scene_h, scene_w = scene.shape[0:2]
+#corners: opencv uses (top left, top right, bottom right, bottom left)
 object_corners = np.float32([(0,0), (obj_w, 0), (obj_w, obj_h), (0, obj_h)])
 #corners of the object in the scene (I don't know about the reshaping. I never investigated it)
 obj_in_scene_corners = cv2.perspectiveTransform(object_corners.reshape(1, -1, 2), homography).reshape(-1, 2)
@@ -105,12 +105,13 @@ combo[0:obj_h, 0:obj_w] = obj
 combo[0:scene_h, obj_w:obj_w+scene_w] = scene
 combo = cv2.cvtColor(combo, cv2.COLOR_GRAY2BGR) #upgrade to color for output image
 #draw a polygon around the object in the scene
-obj_in_scene_offset_corners = np.int32(obj_in_scene_corners + (obj_w, 0)) #offset for the combined image
-cv2.polylines(combo, [obj_in_scene_offset_corners], True, (0, 255, 0), 2)
-#mark inlier and outlier matches
+blue =  (255, 0, 0)
 green = (0, 255, 0)
-red = (0, 0, 255)
-gray = (150, 150, 150)
+red =   (0, 0, 255)
+gray =  (150, 150, 150)
+obj_in_scene_offset_corners = np.int32(obj_in_scene_corners + (obj_w, 0)) #offset for the combined image
+cv2.polylines(combo, [obj_in_scene_offset_corners], True, blue, 2)
+#mark inlier and outlier matches
 for (x1, y1), (x2, y2), inlier in zip(np.int32(obj_matched_points), np.int32(scene_matched_points), homography_mask):
     if inlier:
         #draw a line with circle ends
@@ -130,16 +131,14 @@ for (x1, y1), (x2, y2), inlier in zip(np.int32(obj_matched_points), np.int32(sce
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # Extract the object from the original scene
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-obj_in_scene_tl, obj_in_scene_tr, obj_in_scene_br, obj_in_scene_bl = obj_in_scene_corners
-tops = (obj_in_scene_tl[1], obj_in_scene_tr[1])
-bottoms = (obj_in_scene_bl[1], obj_in_scene_br[1])
-lefts = (obj_in_scene_tl[0], obj_in_scene_bl[0])
-rights = (obj_in_scene_tr[0], obj_in_scene_br[0])
+#combine all tops+bottoms and lefts+rights before min/max to handle flipped projections
+tops_bottoms = list(corner[1] for corner in obj_in_scene_corners)
+lefts_rights = list(corner[0] for corner in obj_in_scene_corners)
 #limit the boundaries to the scene boundaries
-top =    max(min(tops), 0)
-bottom = min(max(bottoms), obj_h - 1)
-left =   max(min(lefts), 0)
-right =  min(max(rights), obj_w - 1)
+top =    max(int(min(tops_bottoms)), 0)
+bottom = min(int(max(tops_bottoms)), scene_h - 1)
+left =   max(int(min(lefts_rights)), 0)
+right =  min(int(max(lefts_rights)), scene_h - 1)
 extracted = scene_original[top:bottom, left:right]
 #display and save the matched and extracted images
 cv2.imshow('match visualization', combo)
