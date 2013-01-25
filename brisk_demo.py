@@ -161,6 +161,33 @@ for (x1, y1), (x2, y2), inlier in zip(np.int32(obj_matched_points), np.int32(sce
 
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+# Do a sanity check on the discovered object
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+use_extracted = True
+#check for size of the discovered result versus the original
+MAX_SCALE = 2
+obj_area = polygon_area(object_corners_float)
+obj_in_scene_area = polygon_area(obj_in_scene_corners_float)
+if not (float(obj_area) / MAX_SCALE**2 < obj_in_scene_area < obj_area * MAX_SCALE**2):
+    print 'A homography was found but it seems too large or small for a real match.'
+    use_extracted = False
+
+#check for crossings in the edges of the polygram made by the corners
+#todo: I don't think this is always correct
+#todo: need to check for intersection. can't think of an easy way
+#TOP_LEFT, TOP_RIGHT, BOTTOM_RIGHT, BOTTOM_LEFT = 0, 1, 2, 3
+#X, Y = 0, 1
+#obj_in_scene_tops = (obj_in_scene_corners_float[TOP_LEFT][Y], obj_in_scene_corners_float[TOP_RIGHT][Y])
+#obj_in_scene_bottoms = (obj_in_scene_corners_float[BOTTOM_LEFT][Y], obj_in_scene_corners_float[BOTTOM_RIGHT][Y])
+#obj_in_scene_lefts = (obj_in_scene_corners_float[TOP_LEFT][X], obj_in_scene_corners_float[BOTTOM_LEFT][X])
+#obj_in_scene_rights = (obj_in_scene_corners_float[TOP_RIGHT][X], obj_in_scene_corners_float[BOTTOM_RIGHT][X])
+#if any(left > right for left in obj_in_scene_lefts for right in obj_in_scene_rights) or\
+#   any(top > bottom for top in obj_in_scene_tops for bottom in obj_in_scene_bottoms):
+#    print 'Result image is twisted and probably not a real result.'
+#    use_extracted = False
+
+
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # Extract the object from the original scene
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 #max/min the corners to disentangle any flipped, etc. projections
@@ -172,16 +199,6 @@ bottom = min(int(max(tops_bottoms)), scene_h - 1)
 left =   max(int(min(lefts_rights)), 0)
 right =  min(int(max(lefts_rights)), scene_w - 1)
 extracted = scene_original[top:bottom, left:right]
-use_extracted = True
-if (top == bottom) or (left == right):
-    print 'Flat result image can not be displayed or written.'
-    use_extracted = False
-
-
-obj_area = polygon_area(object_corners)
-found_obj_area = polygon_area(((top,left), (top,right), (bottom,right), (bottom,left)))
-if (found_obj_area > obj_area * 2) or (found_obj_area < float(obj_area) / 2):
-    print 'A homography was found but it seems too large or small for a real match.'
 
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
