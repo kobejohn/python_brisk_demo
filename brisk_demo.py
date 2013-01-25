@@ -29,11 +29,11 @@ matcher = cv2.BFMatcher(cv2.NORM_L2SQR)
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # Object Features
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-obj_original = cv2.imread('vs_obj_800x600.png', cv2.CV_LOAD_IMAGE_COLOR)
+obj_original = cv2.imread('object.png', cv2.CV_LOAD_IMAGE_COLOR)
 obj_gray = cv2.cvtColor(obj_original, cv2.COLOR_BGR2GRAY) #basic feature detection works in grayscale
 obj = proportional_gaussian(obj_gray) #mild gaussian
 #mask with white in areas to consider, black in areas to ignore
-obj_mask = cv2.imread('vs_obj_mask_800x600.png', cv2.CV_LOAD_IMAGE_GRAYSCALE)
+obj_mask = cv2.imread('object_mask.png', cv2.CV_LOAD_IMAGE_GRAYSCALE)
 #this is the fingerprint:
 obj_keypoints = detector.detect(obj, obj_mask)
 obj_keypoints, obj_descriptors = extractor.compute(obj, obj_keypoints)
@@ -44,7 +44,7 @@ print '    {} keypoints'.format(len(obj_keypoints))
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # Scene Features
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-scene_original = cv2.imread('scene_with_vs_640x480.png', cv2.CV_LOAD_IMAGE_COLOR)
+scene_original = cv2.imread('scene.png', cv2.CV_LOAD_IMAGE_COLOR)
 scene_gray = cv2.cvtColor(scene_original, cv2.COLOR_BGR2GRAY)
 scene = proportional_gaussian(scene_gray)
 #you can use a mask like with the object if you want
