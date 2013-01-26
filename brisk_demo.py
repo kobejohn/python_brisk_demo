@@ -173,19 +173,7 @@ if not (float(obj_area) / MAX_SCALE**2 < obj_in_scene_area < obj_area * MAX_SCAL
     use_extracted = False
 
 #check for crossings in the edges of the polygram made by the corners
-#todo: I don't think this is always correct
-#todo: need to check for intersection. can't think of an easy way
-#TOP_LEFT, TOP_RIGHT, BOTTOM_RIGHT, BOTTOM_LEFT = 0, 1, 2, 3
-#X, Y = 0, 1
-#obj_in_scene_tops = (obj_in_scene_corners_float[TOP_LEFT][Y], obj_in_scene_corners_float[TOP_RIGHT][Y])
-#obj_in_scene_bottoms = (obj_in_scene_corners_float[BOTTOM_LEFT][Y], obj_in_scene_corners_float[BOTTOM_RIGHT][Y])
-#obj_in_scene_lefts = (obj_in_scene_corners_float[TOP_LEFT][X], obj_in_scene_corners_float[BOTTOM_LEFT][X])
-#obj_in_scene_rights = (obj_in_scene_corners_float[TOP_RIGHT][X], obj_in_scene_corners_float[BOTTOM_RIGHT][X])
-#if any(left > right for left in obj_in_scene_lefts for right in obj_in_scene_rights) or\
-#   any(top > bottom for top in obj_in_scene_tops for bottom in obj_in_scene_bottoms):
-#    print 'Result image is twisted and probably not a real result.'
-#    use_extracted = False
-
+#todo: this would be another good check
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # Extract the object from the original scene
