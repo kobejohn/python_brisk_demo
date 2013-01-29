@@ -1,7 +1,14 @@
 from os import path
 import sys
 import numpy as np
-import cv2
+try:
+    import cv2
+except ImportError:
+    print 'Couldn\'t find opencv so trying to use the fallback cv2.pyd (maybe only for windows).'
+    from _cv2_fallback import cv2
+
+
+#forgive all the double lines between sections. it allows copy paste to work without problems in my interpreter
 
 
 def proportional_gaussian(image):
