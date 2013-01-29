@@ -1,5 +1,5 @@
 thumbs.db
-*.py[cod]
+*.py[co]
 
 # C extensions
 *.so
