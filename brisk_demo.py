@@ -192,11 +192,13 @@ extracted = scene_original[top:bottom, left:right]
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # Display and save all the results
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+combo_path = path.join('.', 'output_images', 'match_visualization.png')
 cv2.imshow('match visualization', combo)
-cv2.imwrite('match_visualization.png', combo)
+cv2.imwrite(combo_path, combo)
 if use_extracted:
+    extracted_path = path.join('.', 'output_images', 'extracted.png')
     cv2.imshow('extracted image', extracted)
-    cv2.imwrite('extracted.png', extracted)
+    cv2.imwrite(extracted_path, extracted)
 
 
 cv2.waitKey()
