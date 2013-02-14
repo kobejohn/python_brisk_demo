@@ -4,7 +4,7 @@ import numpy as np
 try:
     import cv2
 except ImportError:
-    print 'Couldn\'t find opencv so trying to use the fallback cv2.pyd (maybe only for windows).'
+    print 'Couldn\'t find opencv so trying to use the fallback cv2.pyd (only for windows).'
     from _cv2_fallback import cv2
 
 
