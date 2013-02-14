@@ -36,7 +36,9 @@ def polygon_area(vertices):
 # Fundamental Parts
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 #using alternative detectors, descriptors, matchers, and parameters will get different results
-detector = cv2.FastFeatureDetector()
+# detector = cv2.FastFeatureDetector()
+# detector = cv2.FeatureDetector_create('FAST')
+detector = cv2.BRISK(thresh=30, octaves=0)  # use FastFeatureDetector above if this doesn't work for you
 extractor = cv2.DescriptorExtractor_create('BRISK') #non-patented! Thank you!!!
 matcher = cv2.BFMatcher(cv2.NORM_L2SQR)
 
