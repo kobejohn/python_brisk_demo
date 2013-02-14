@@ -37,9 +37,9 @@ def polygon_area(vertices):
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 #using alternative detectors, descriptors, matchers, and parameters will get different results
 # detector = cv2.FastFeatureDetector()
-# detector = cv2.FeatureDetector_create('FAST')
-detector = cv2.BRISK(thresh=30, octaves=0)  # use FastFeatureDetector above if this doesn't work for you
-extractor = cv2.DescriptorExtractor_create('BRISK') #non-patented! Thank you!!!
+# detector = cv2.FeatureDetector_create('FAST')  # use this if you don't have the first one
+detector = cv2.BRISK(thresh=30, octaves=0)  # use Fast Feature Detector above if this doesn't work for you
+extractor = cv2.DescriptorExtractor_create('BRISK')  # non-patented! Thank you!!!
 matcher = cv2.BFMatcher(cv2.NORM_L2SQR)
 
 
@@ -54,7 +54,7 @@ if obj_original is None:
 
 obj_gray = cv2.cvtColor(obj_original, cv2.COLOR_BGR2GRAY) #basic feature detection works in grayscale
 obj = proportional_gaussian(obj_gray) #mild gaussian
-#mask with white in areas to consider, black in areas to ignore
+# mask with white in areas to consider, black in areas to ignore
 obj_mask = cv2.imread(path.join('source_images', 'object_mask.png'), cv2.CV_LOAD_IMAGE_GRAYSCALE)
 if obj_mask is None:
     print 'Couldn\'t find the object mask image with the provided path. Continuing without it.'
@@ -123,7 +123,7 @@ scene_matched_points = np.array([scene_keypoints[match.trainIdx].pt for match in
 #this also gets the homography mask which identifies each match as an inlier or outlier
 homography, homography_mask = cv2.findHomography(obj_matched_points, scene_matched_points, cv2.RANSAC, 2.0) #2.0: should be very close
 print 'Homography Summary  **************************************************'
-print'    {} / {}      inliers / total matches'.format(np.sum(homography_mask), len(homography_mask))
+print'    {} / {}      inliers / good matches'.format(np.sum(homography_mask), len(homography_mask))
 
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
