@@ -132,7 +132,13 @@ print'    {} / {}      inliers / good matches'.format(np.sum(homography_mask), l
 obj_h, obj_w = obj.shape[0:2]
 scene_h, scene_w = scene.shape[0:2]
 #corners: opencv uses (top left, top right, bottom right, bottom left)
-object_corners_float = np.float32([(0,0), (obj_w, 0), (obj_w, obj_h), (0, obj_h)])
+obj_top_left = (0, 0)
+obj_top_right = (obj_w, 0)
+obj_bottom_right = (obj_w, obj_h)
+obj_bottom_left = (0, obj_h)
+object_corners_float = np.array([obj_top_left, obj_top_right,
+                                 obj_bottom_right, obj_bottom_left],
+                                dtype=np.float32)
 #corners of the object in the scene (I don't know about the reshaping. I never investigated it)
 obj_in_scene_corners_float = cv2.perspectiveTransform(object_corners_float.reshape(1, -1, 2), homography).reshape(-1, 2)
 
