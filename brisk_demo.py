@@ -99,8 +99,10 @@ if len(matches) < min_matches:
 distances = [match.distance for match in matches]
 min_dist = min(distances)
 avg_dist = sum(distances) / len(distances)
-min_dist = min_dist or avg_dist * 0.01 #if min_dist is zero, use a small percentage of avg instead
-good_matches = [match for match in matches if match.distance <= 3 * min_dist]
+min_multiplier_tolerance = 10
+min_dist = min_dist or avg_dist * 1.0 / min_multiplier_tolerance
+good_matches = [match for match in matches if match.distance
+                <= min_multiplier_tolerance * min_dist]
 print 'Match Summary  **************************************************'
 print '    {} / {}      good / total matches'.format(len(good_matches),
                                                      len(matches))
@@ -191,11 +193,15 @@ for (x1, y1), (x2, y2), inlier in zip(np.int32(obj_matched_points),
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 use_extracted = True  # keep track of whether the extraction works or not
 #check for size of the discovered result versus the original
-MAX_SCALE = 2
+scale_tolerance = 0.7
 obj_area = polygon_area(object_corners_float)
 obj_in_scene_area = polygon_area(obj_in_scene_corners_float)
-if not (float(obj_area) / MAX_SCALE**2 < obj_in_scene_area < obj_area * MAX_SCALE**2):
-    print 'A homography was found but it seems too large or small for a real match.'
+tolerance = float(obj_area) * (scale_tolerance ** 2)
+area_min_allowed = obj_area - tolerance
+area_max_allowed = obj_area + tolerance
+if not (area_min_allowed < obj_in_scene_area < area_max_allowed):
+    print 'A homography was found but it seems too large or' \
+          ' too small for a real match.'
     use_extracted = False
 
 
@@ -206,10 +212,10 @@ if not (float(obj_area) / MAX_SCALE**2 < obj_in_scene_area < obj_area * MAX_SCAL
 tops_bottoms = list(corner[1] for corner in obj_in_scene_corners_float)
 lefts_rights = list(corner[0] for corner in obj_in_scene_corners_float)
 #limit the boundaries to the scene boundaries
-top =    max(int(min(tops_bottoms)), 0)
+top = max(int(min(tops_bottoms)), 0)
 bottom = min(int(max(tops_bottoms)), scene_h - 1)
-left =   max(int(min(lefts_rights)), 0)
-right =  min(int(max(lefts_rights)), scene_w - 1)
+left = max(int(min(lefts_rights)), 0)
+right = min(int(max(lefts_rights)), scene_w - 1)
 extracted = scene_original[top:bottom, left:right]
 
 
