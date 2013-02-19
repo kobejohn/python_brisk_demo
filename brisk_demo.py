@@ -38,7 +38,7 @@ def polygon_area(vertices):
 #using alternative detectors, descriptors, matchers, and parameters will get different results
 # detector = cv2.FastFeatureDetector()
 # detector = cv2.FeatureDetector_create('FAST')  # use this if you don't have the first one
-detector = cv2.BRISK(thresh=30, octaves=0)  # use Fast Feature Detector above if this doesn't work for you
+detector = cv2.BRISK(thresh=10, octaves=0)  # use Fast Feature Detector above if this doesn't work for you
 extractor = cv2.DescriptorExtractor_create('BRISK')  # non-patented! Thank you!!!
 matcher = cv2.BFMatcher(cv2.NORM_L2SQR)
 
@@ -77,7 +77,8 @@ if scene_original is None:
 
 
 scene_gray = cv2.cvtColor(scene_original, cv2.COLOR_BGR2GRAY)
-scene = proportional_gaussian(scene_gray)
+# scene = proportional_gaussian(scene_gray)
+scene = scene_gray
 #mask with white in areas to consider, black in areas to ignore
 scene_mask = cv2.imread('scene_mask.png', cv2.CV_LOAD_IMAGE_GRAYSCALE)
 if scene_mask is None:
