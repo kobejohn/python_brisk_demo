@@ -4,18 +4,10 @@ import numpy as np
 try:
     import cv2
 except ImportError:
-    print 'Couldn\'t find opencv so trying to use the fallback cv2.pyd (only for windows).'
+    print 'Couldn\'t find opencv so trying to use the fallback' \
+          ' cv2.pyd (only for windows).'
     from _cv2_fallback import cv2
 
-
-#forgive all the double lines between sections. it allows copy paste to work without problems in my interpreter
-
-
-def proportional_gaussian(image):
-    """Help objects with differing sharpness look more similar to the feature detector etc."""
-    kernel_w = int(2.0 * round((image.shape[1]*0.005+1)/2.0)-1)
-    kernel_h = int(2.0 * round((image.shape[0]*0.005+1)/2.0)-1)
-    return cv2.GaussianBlur(image, (kernel_w, kernel_h), 0) #blur to make features match at different resolutions
 
 def polygon_area(vertices):
     """Calculate the area of the vertices described by the sequence of vertices.
@@ -29,39 +21,41 @@ def polygon_area(vertices):
     for i in range(len(vertices)):
         area += (X[j] + X[i]) * (Y[j] - Y[i])
         j = i
-    return abs(area) / 2 #abs in case it's negative
+    return abs(area) / 2  # abs in case it's negative
 
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # Fundamental Parts
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-#using alternative detectors, descriptors, matchers, and parameters will get different results
-# detector = cv2.FastFeatureDetector()
-# detector = cv2.FeatureDetector_create('FAST')  # use this if you don't have the first one
-detector = cv2.BRISK(thresh=10, octaves=0)  # use Fast Feature Detector above if this doesn't work for you
-extractor = cv2.DescriptorExtractor_create('BRISK')  # non-patented! Thank you!!!
-matcher = cv2.BFMatcher(cv2.NORM_L2SQR)
+# alternative detectors, descriptors, matchers, parameters ==> different results
+detector = cv2.BRISK(thresh=10, octaves=0)
+extractor = cv2.DescriptorExtractor_create('BRISK')  # non-patented. Thank you!
+matcher = cv2.BFMatcher(cv2.NORM_L2)
 
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # Object Features
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-obj_original = cv2.imread(path.join('source_images', 'object.png'), cv2.CV_LOAD_IMAGE_COLOR)
+obj_original = cv2.imread(path.join('source_images', 'object.png'),
+                          cv2.CV_LOAD_IMAGE_COLOR)
 if obj_original is None:
     print 'Couldn\'t find the object image with the provided path.'
     sys.exit()
 
 
-obj_gray = cv2.cvtColor(obj_original, cv2.COLOR_BGR2GRAY) #basic feature detection works in grayscale
-obj = proportional_gaussian(obj_gray) #mild gaussian
+# basic feature detection works in grayscale
+obj = cv2.cvtColor(obj_original, cv2.COLOR_BGR2GRAY)
 # mask with white in areas to consider, black in areas to ignore
-obj_mask = cv2.imread(path.join('source_images', 'object_mask.png'), cv2.CV_LOAD_IMAGE_GRAYSCALE)
+obj_mask = cv2.imread(path.join('source_images', 'object_mask.png'),
+                      cv2.CV_LOAD_IMAGE_GRAYSCALE)
 if obj_mask is None:
-    print 'Couldn\'t find the object mask image with the provided path. Continuing without it.'
+    print 'Couldn\'t find the object mask image with the provided path.' \
+          ' Continuing without it.'
 
 
-#this is the fingerprint:
+# keypoints are "interesting" points in an image:
 obj_keypoints = detector.detect(obj, obj_mask)
+# this lines up each keypoint with a mathematical description
 obj_keypoints, obj_descriptors = extractor.compute(obj, obj_keypoints)
 print 'Object Summary  *************************************************'
 print '    {} keypoints'.format(len(obj_keypoints))
@@ -70,22 +64,21 @@ print '    {} keypoints'.format(len(obj_keypoints))
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # Scene Features
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-scene_original = cv2.imread(path.join('source_images', 'scene.png'), cv2.CV_LOAD_IMAGE_COLOR)
+scene_original = cv2.imread(path.join('source_images', 'scene.png'),
+                            cv2.CV_LOAD_IMAGE_COLOR)
 if scene_original is None:
     print 'Couldn\'t find the scene image with the provided path.'
     sys.exit()
 
 
-scene_gray = cv2.cvtColor(scene_original, cv2.COLOR_BGR2GRAY)
-# scene = proportional_gaussian(scene_gray)
-scene = scene_gray
-#mask with white in areas to consider, black in areas to ignore
-scene_mask = cv2.imread('scene_mask.png', cv2.CV_LOAD_IMAGE_GRAYSCALE)
+scene = cv2.cvtColor(scene_original, cv2.COLOR_BGR2GRAY)
+scene_mask = cv2.imread(path.join('source_images', 'scene_mask.png'),
+                        cv2.CV_LOAD_IMAGE_GRAYSCALE)
 if scene_mask is None:
-    print 'Couldn\'t find the scene mask image with the provided path. Continuing without it.'
+    print 'Couldn\'t find the scene mask image with the provided path.' \
+          ' Continuing without it.'
 
 
-#this is the fingerprint:
 scene_keypoints = detector.detect(scene, scene_mask)
 scene_keypoints, scene_descriptors = extractor.compute(scene, scene_keypoints)
 print 'Scene Summary  **************************************************'
@@ -95,9 +88,10 @@ print '    {} keypoints'.format(len(scene_keypoints))
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # Match features between the object and scene
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-matches = matcher.match(obj_descriptors, scene_descriptors) #try to match similar keypoints
-if len(matches) == 0:
-    print 'No matches found between the image and scene keypoints.'
+min_matches = 3
+matches = matcher.match(obj_descriptors, scene_descriptors)
+if len(matches) < min_matches:
+    print 'Not enough matches found between the image and scene keypoints.'
     sys.exit()
 
 
@@ -108,8 +102,9 @@ avg_dist = sum(distances) / len(distances)
 min_dist = min_dist or avg_dist * 0.01 #if min_dist is zero, use a small percentage of avg instead
 good_matches = [match for match in matches if match.distance <= 3 * min_dist]
 print 'Match Summary  **************************************************'
-print '    {} / {}      good / total matches'.format(len(good_matches), len(matches))
-if len(good_matches) < 3:
+print '    {} / {}      good / total matches'.format(len(good_matches),
+                                                     len(matches))
+if len(good_matches) < min_matches:
     print 'not enough good matches to continue'
     sys.exit()
 
@@ -118,13 +113,18 @@ if len(good_matches) < 3:
 # Calculate the shape of the object discovered in the scene.
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 #extract the positions of the good matches within the object and scene
-obj_matched_points = np.array([obj_keypoints[match.queryIdx].pt for match in good_matches])
-scene_matched_points = np.array([scene_keypoints[match.trainIdx].pt for match in good_matches])
-#find the homography which describes how the object is oriented in the scene
-#this also gets the homography mask which identifies each match as an inlier or outlier
-homography, homography_mask = cv2.findHomography(obj_matched_points, scene_matched_points, cv2.RANSAC, 2.0) #2.0: should be very close
+obj_matched_points = np.array([obj_keypoints[match.queryIdx].pt
+                               for match in good_matches])
+scene_matched_points = np.array([scene_keypoints[match.trainIdx].pt
+                                 for match in good_matches])
+# find the homography which describes how the object is oriented in the scene
+# also gets a mask which identifies each match as an inlier or outlier
+homography, homography_mask = cv2.findHomography(obj_matched_points,
+                                                 scene_matched_points,
+                                                 cv2.RANSAC, 2.0)
 print 'Homography Summary  **************************************************'
-print'    {} / {}      inliers / good matches'.format(np.sum(homography_mask), len(homography_mask))
+print'    {} / {}      inliers / good matches'.format(np.sum(homography_mask),
+                                                      len(homography_mask))
 
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
@@ -140,46 +140,56 @@ obj_bottom_left = (0, obj_h)
 object_corners_float = np.array([obj_top_left, obj_top_right,
                                  obj_bottom_right, obj_bottom_left],
                                 dtype=np.float32)
-#corners of the object in the scene (I don't know about the reshaping. I never investigated it)
-obj_in_scene_corners_float = cv2.perspectiveTransform(object_corners_float.reshape(1, -1, 2), homography).reshape(-1, 2)
+#corners of the object in the scene (I don't know about the reshaping)
+obj_in_scene_corners_float =\
+    cv2.perspectiveTransform(object_corners_float.reshape(1, -1, 2),
+                             homography).reshape(-1, 2)
 
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # Visualize the matching results
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-#create a combined image of the original object and the scene
-combo = np.zeros((max(scene_h, obj_h), scene_w + obj_w), np.uint8)
-combo[0:obj_h, 0:obj_w] = obj
-combo[0:scene_h, obj_w:obj_w+scene_w] = scene
-combo = cv2.cvtColor(combo, cv2.COLOR_GRAY2BGR) #upgrade to color for output image
-#draw a polygon around the object in the scene
-blue =  (255, 0, 0)
+# create a combined image of the original object and the scene
+blue = (255, 0, 0)
 green = (0, 255, 0)
-red =   (0, 0, 255)
-gray =  (150, 150, 150)
-obj_in_scene_offset_corners_float = obj_in_scene_corners_float + (obj_w, 0) #offset for the combined image
-cv2.polylines(combo, [np.int32(obj_in_scene_offset_corners_float)], True, blue, 2)
-#mark inlier and outlier matches
-for (x1, y1), (x2, y2), inlier in zip(np.int32(obj_matched_points), np.int32(scene_matched_points), homography_mask):
+red = (0, 0, 255)
+combo_image = np.zeros((max(scene_h, obj_h), scene_w + obj_w), np.uint8)
+combo_image[0:obj_h, 0:obj_w] = obj  # copy the obj into the combo image
+combo_image[0:scene_h, obj_w:obj_w + scene_w] = scene  # same for the scene
+combo_image = cv2.cvtColor(combo_image, cv2.COLOR_GRAY2BGR)  # color for output
+# draw a polygon around the object in the scene
+obj_in_scene_offset_corners_float = obj_in_scene_corners_float + (obj_w, 0)
+cv2.polylines(combo_image, [np.int32(obj_in_scene_offset_corners_float)],
+              True, blue, 2)
+# mark inlier and outlier matches
+for (x1, y1), (x2, y2), inlier in zip(np.int32(obj_matched_points),
+                                      np.int32(scene_matched_points),
+                                      homography_mask):
     if inlier:
-        #draw a line with circle ends
-        cv2.line(combo, (x1, y1), (x2+obj_w, y2), gray)
-        cv2.circle(combo, (x1, y1), 4, green, 2)
-        cv2.circle(combo, (x2+obj_w, y2), 4, green, 2)
+        #draw a line with circle ends for each inlier
+        cv2.line(combo_image, (x1, y1), (x2 + obj_w, y2), green)
+        cv2.circle(combo_image, (x1, y1), 4, green, 2)
+        cv2.circle(combo_image, (x2 + obj_w, y2), 4, green, 2)
     else:
-        #draw a red x
+        #draw a red x for outliers
         r = 2
-        thickness = 2
-        cv2.line(combo, (x1-r, y1-r), (x1+r, y1+r), red, thickness)
-        cv2.line(combo, (x1-r, y1+r), (x1+r, y1-r), red, thickness)
-        cv2.line(combo, (x2+obj_w-r, y2-r), (x2+obj_w+r, y2+r), red, thickness)
-        cv2.line(combo, (x2+obj_w-r, y2+r), (x2+obj_w+r, y2-r), red, thickness)
+        weight = 2
+        cv2.line(combo_image,
+                 (x1 - r, y1 - r), (x1 + r, y1 + r), red, weight)
+        cv2.line(combo_image,
+                 (x1 - r, y1 + r), (x1 + r, y1 - r), red, weight)
+        cv2.line(combo_image,
+                 (x2 + obj_w - r, y2 - r), (x2 + obj_w + r, y2 + r),
+                 red, weight)
+        cv2.line(combo_image,
+                 (x2 + obj_w - r, y2 + r), (x2 + obj_w + r, y2 - r),
+                 red, weight)
 
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # Do a sanity check on the discovered object
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-use_extracted = True
+use_extracted = True  # keep track of whether the extraction works or not
 #check for size of the discovered result versus the original
 MAX_SCALE = 2
 obj_area = polygon_area(object_corners_float)
@@ -188,8 +198,6 @@ if not (float(obj_area) / MAX_SCALE**2 < obj_in_scene_area < obj_area * MAX_SCAL
     print 'A homography was found but it seems too large or small for a real match.'
     use_extracted = False
 
-#check for crossings in the edges of the polygram made by the corners
-#todo: this would be another good check
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # Extract the object from the original scene
@@ -209,8 +217,9 @@ extracted = scene_original[top:bottom, left:right]
 # Display and save all the results
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 combo_path = path.join('.', 'output_images', 'match_visualization.png')
-cv2.imshow('match visualization', combo)
-cv2.imwrite(combo_path, combo)
+cv2.imshow('match visualization', combo_image)
+cv2.imwrite(combo_path, combo_image)
+# only display/save extracted if the previous tests indicated it was realistic
 if use_extracted:
     extracted_path = path.join('.', 'output_images', 'extracted.png')
     cv2.imshow('extracted image', extracted)
