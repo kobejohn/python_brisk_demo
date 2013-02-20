@@ -9,6 +9,9 @@ except ImportError:
     from _cv2_fallback import cv2
 
 
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+# Helper Functions
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 def polygon_area(vertices):
     """Calculate the area of the vertices described by the sequence of vertices.
 
@@ -99,10 +102,12 @@ if len(matches) < min_matches:
 distances = [match.distance for match in matches]
 min_dist = min(distances)
 avg_dist = sum(distances) / len(distances)
+# basically allow everything except awful outliers
+# a lower number like 2 will exclude a lot of matches if that's what you need
 min_multiplier_tolerance = 10
 min_dist = min_dist or avg_dist * 1.0 / min_multiplier_tolerance
-good_matches = [match for match in matches if match.distance
-                <= min_multiplier_tolerance * min_dist]
+good_matches = [match for match in matches if
+                match.distance <= min_multiplier_tolerance * min_dist]
 print 'Match Summary  **************************************************'
 print '    {} / {}      good / total matches'.format(len(good_matches),
                                                      len(matches))
@@ -223,13 +228,19 @@ extracted = scene_original[top:bottom, left:right]
 # Display and save all the results
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 combo_path = path.join('.', 'output_images', 'match_visualization.png')
-cv2.imshow('match visualization', combo_image)
 cv2.imwrite(combo_path, combo_image)
+mini_combo_h, mini_combo_w = int(round(float(combo_image.shape[0])/2)),\
+                             int(round(float(combo_image.shape[1])/2))
+mini_combo = cv2.resize(combo_image, (mini_combo_w, mini_combo_h))
+cv2.imshow('match visualization', mini_combo)
 # only display/save extracted if the previous tests indicated it was realistic
 if use_extracted:
     extracted_path = path.join('.', 'output_images', 'extracted.png')
-    cv2.imshow('extracted image', extracted)
     cv2.imwrite(extracted_path, extracted)
+    mini_extr_h, mini_extr_w = int(round(float(extracted.shape[0])/2)),\
+                               int(round(float(extracted.shape[1])/2))
+    mini_extr = cv2.resize(extracted, (mini_extr_w, mini_extr_h))
+    cv2.imshow('extracted image', mini_extr)
 
 
 cv2.waitKey()
