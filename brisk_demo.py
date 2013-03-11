@@ -31,7 +31,7 @@ def polygon_area(vertices):
 # Fundamental Parts
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # alternative detectors, descriptors, matchers, parameters ==> different results
-detector = cv2.BRISK(thresh=10, octaves=0)
+detector = cv2.BRISK(thresh=10, octaves=1)
 extractor = cv2.DescriptorExtractor_create('BRISK')  # non-patented. Thank you!
 matcher = cv2.BFMatcher(cv2.NORM_L2SQR)
 
