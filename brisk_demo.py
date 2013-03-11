@@ -201,9 +201,8 @@ use_extracted = True  # keep track of whether the extraction works or not
 scale_tolerance = 0.7
 obj_area = polygon_area(object_corners_float)
 obj_in_scene_area = polygon_area(obj_in_scene_corners_float)
-tolerance = float(obj_area) * (scale_tolerance ** 2)
-area_min_allowed = obj_area - tolerance
-area_max_allowed = obj_area + tolerance
+area_min_allowed = obj_area * (1 - scale_tolerance) ** 2
+area_max_allowed = obj_area * (1 + scale_tolerance) ** 2
 if not (area_min_allowed < obj_in_scene_area < area_max_allowed):
     print 'A homography was found but it seems too large or' \
           ' too small for a real match.'
